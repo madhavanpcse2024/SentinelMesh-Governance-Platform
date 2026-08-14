@@ -1,0 +1,305 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: API specification
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: governance
+    description: SentinelMesh governance operations
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      description: Returns server health status
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+  /registry:
+    get:
+      operationId: listAgents
+      tags: [governance]
+      summary: List registered agents
+      responses:
+        "200":
+          description: Registered agents
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Agent"
+  /dashboard:
+    get:
+      operationId: getDashboard
+      tags: [governance]
+      summary: Get governance dashboard summary
+      responses:
+        "200":
+          description: Dashboard summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardSummary"
+  /activity:
+    get:
+      operationId: listActivity
+      tags: [governance]
+      summary: List recent governance activity
+      parameters:
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: number
+            minimum: 1
+            maximum: 50
+            default: 20
+      responses:
+        "200":
+          description: Recent activity
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ActivityEvent"
+  /compliance-items:
+    get:
+      operationId: listComplianceItems
+      tags: [governance]
+      summary: List compliance deadlines
+      responses:
+        "200":
+          description: Compliance items
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ComplianceItem"
+  /tasks:
+    post:
+      operationId: runGovernanceTask
+      tags: [governance]
+      summary: Route and run an autonomous governance task
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TaskInput"
+      responses:
+        "200":
+          description: Task decision
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TaskRun"
+  /access-requests:
+    post:
+      operationId: evaluateAccessRequest
+      tags: [governance]
+      summary: Evaluate a scoped data-access request
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AccessRequestInput"
+      responses:
+        "200":
+          description: Access decision
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AccessDecision"
+  /reports/weekly:
+    get:
+      operationId: getWeeklyReport
+      tags: [governance]
+      summary: Compose a cross-agent weekly digest
+      responses:
+        "200":
+          description: Weekly digest
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WeeklyReport"
+  /observability:
+    get:
+      operationId: getObservability
+      tags: [governance]
+      summary: Get structured observability summary
+      responses:
+        "200":
+          description: Observability summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ObservabilitySummary"
+  /sessions/{sessionId}:
+    get:
+      operationId: getSessionMemory
+      tags: [governance]
+      summary: Read persisted session context
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Session memory
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SessionMemory"
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+    Agent:
+      type: object
+      required: [id, name, version, declared_scope, declared_tools, status, owner]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        version: { type: string }
+        declared_scope: { type: string }
+        declared_tools:
+          type: array
+          items: { type: string }
+        status: { type: string }
+        owner: { type: string }
+    DashboardSummary:
+      type: object
+      required: [active_agents, deadlines, risk_counts, requests_today, recovery_rate]
+      properties:
+        active_agents: { type: number }
+        deadlines: { type: number }
+        requests_today: { type: number }
+        recovery_rate: { type: number }
+        risk_counts:
+          type: object
+          required: [on_track, at_risk, overdue]
+          properties:
+            on_track: { type: number }
+            at_risk: { type: number }
+            overdue: { type: number }
+    ActivityEvent:
+      type: object
+      required: [id, timestamp, agent_id, event_type, decision, status, reasoning_trace, latency_ms]
+      properties:
+        id: { type: string }
+        timestamp: { type: string }
+        agent_id: { type: string }
+        event_type: { type: string }
+        decision: { type: string }
+        status: { type: string }
+        reasoning_trace: { type: string }
+        latency_ms: { type: number }
+    ComplianceItem:
+      type: object
+      required: [item_id, title, owner, due_date, risk_level, summary, recommended_action, project_id]
+      properties:
+        item_id: { type: string }
+        title: { type: string }
+        owner: { type: string }
+        due_date: { type: string }
+        project_id: { type: string }
+        risk_level: { type: string }
+        summary: { type: string }
+        recommended_action: { type: string }
+    TaskInput:
+      type: object
+      required: [task, session_id]
+      properties:
+        task: { type: string, minLength: 1 }
+        session_id: { type: string, minLength: 1 }
+        failure_injection: { type: boolean, default: false }
+    TaskRun:
+      type: object
+      required: [run_id, intent, agent_id, status, result, reasoning_trace, attempts, fallback_used, session_id]
+      properties:
+        run_id: { type: string }
+        intent: { type: string }
+        agent_id: { type: string }
+        status: { type: string }
+        result: { type: object, additionalProperties: true }
+        reasoning_trace: { type: string }
+        attempts: { type: number }
+        fallback_used: { type: boolean }
+        session_id: { type: string }
+    AccessRequestInput:
+      type: object
+      required: [requester, project_id, request_text, session_id]
+      properties:
+        requester: { type: string, minLength: 1 }
+        project_id: { type: string, minLength: 1 }
+        request_text: { type: string, minLength: 1 }
+        session_id: { type: string, minLength: 1 }
+    AccessDecision:
+      type: object
+      required: [request_id, decision, requester, project_id, explanation, injection_detected, logged]
+      properties:
+        request_id: { type: string }
+        decision: { type: string }
+        requester: { type: string }
+        project_id: { type: string }
+        explanation: { type: string }
+        injection_detected: { type: boolean }
+        logged: { type: boolean }
+    WeeklyReport:
+      type: object
+      required: [period, headline, risk_summary, decisions_reviewed, recommendations, sources]
+      properties:
+        period: { type: string }
+        headline: { type: string }
+        risk_summary: { type: string }
+        decisions_reviewed: { type: number }
+        recommendations:
+          type: array
+          items: { type: string }
+        sources:
+          type: array
+          items: { type: string }
+    ObservabilitySummary:
+      type: object
+      required: [events_today, success_rate, avg_latency_ms, retries, fallbacks, last_event]
+      properties:
+        events_today: { type: number }
+        success_rate: { type: number }
+        avg_latency_ms: { type: number }
+        retries: { type: number }
+        fallbacks: { type: number }
+        last_event:
+          anyOf:
+            - $ref: "#/components/schemas/ActivityEvent"
+            - type: "null"
+    SessionMemory:
+      type: object
+      required: [session_id, context, last_intent, updated_at]
+      properties:
+        session_id: { type: string }
+        context: { type: string }
+        last_intent: { type: string }
+        updated_at: { type: string }
+
