@@ -1,151 +1,141 @@
-# SentinelMesh — Multi-Agent Enterprise Governance System
+# SentinelMesh
 
-> **Track**: Fortified Enterprise Fleet  
-> **Target User**: Resource-constrained institution (campus research lab) managing multi-week grant compliance, IRB deadlines, and cross-PI data access — an "unlikely hero" use case with zero enterprise budget.
+**A multi-agent enterprise governance control plane — built for institutions that need enterprise-grade oversight on zero enterprise budget.**
 
----
-
-## 📋 Devpost Official Submission Form Copy-Paste Summary
-
-* **Project Name**: SentinelMesh — Multi-Agent Enterprise Governance System
-* **Elevator Pitch**: Fortified Multi-Agent Governance Control Plane for Enterprise Fleet & Campus Research Labs built with Google ADK, Gemini 3.5 Flash, Cloud Run & Firestore.
-* **Track Selected**: **The Fortified Enterprise Fleet** ($20,000 Cash Prize Track)
-* **Public Code Repository**: `https://github.com/Madhavan20906/SentinelMesh-Governance-Platform`
-* **Hosted Cloud Run URL**: `https://sentinelmesh-gov-plane-7x9a3k-uc.a.run.app`
-* **Google Tech Stack Verified**:
-  - **Google ADK (Agent Development Kit)** — Orchestration & scoped tool execution
-  - **Vertex AI Gemini 3.5 Flash** — Reasoning engine & Pydantic schema validation
-  - **Google Cloud Run** — Serverless microservices backend deployment
-  - **Google Firestore** — Persistent `session_memory` context & `agent_registry`
-  - **Google Cloud Logging** — OpenTelemetry-compliant audit trail
-* **GEAP 4 Pillars Verified**:
-  1. **Agent Registry**: Firestore catalog + `GET /registry` API endpoint
-  2. **Agent Runtime & Memory**: Google ADK `Runner` + Firestore `session_memory`
-  3. **Security & Model Armor**: Trust-by-Header RBAC + inline prompt injection quarantine
-  4. **Agent Observability**: `require_api_key` middleware + Cloud Logging telemetry
+SentinelMesh gives resource-constrained organizations (a campus research lab juggling grant compliance, IRB deadlines, and cross-PI data access is the reference deployment) a governed, observable, and safely-degrading layer for running specialized AI agents against real institutional data — without ever letting a language model make the final call on privilege escalation.
 
 ---
 
-## 🏛️ Architecture & GEAP Pillar Mapping
+## Why SentinelMesh exists
 
-### 📐 System Architecture Diagram
-![SentinelMesh System Architecture Diagram](file:///d:/SentinelMesh-Governance-Platform/SentinelMesh_Architecture_Diagram.png)
+Most "agentic" systems fail in one of three boring, predictable ways:
 
-### 🛡️ GEAP 4-Pillar Infrastructure Architecture
-![SentinelMesh 10/10 Architecture Diagram](file:///d:/SentinelMesh-Governance-Platform/SentinelMesh_10of10_Architecture.png)
+1. A model produces malformed output and something downstream silently acts on garbage.
+2. A model is trusted to reason about its own permissions, and a cleverly-worded prompt talks it into overreaching.
+3. A single failure cascades because there's no bounded retry, no fallback, and no audit trail to explain what happened.
+
+SentinelMesh is built around the opposite defaults: **schema validation before action, deterministic (non-LLM) authorization, bounded retries with safe fallback, and a full audit trail for every decision.**
+
+---
+
+## Core capabilities
+
+- **Agent Registry** — a live, versioned catalog of every active agent, its declared scope, and its available tools, exposed via a simple read API.
+- **Session Memory** — persistent, cross-request context that survives restarts, so agents don't lose state between interactions.
+- **Scoped Sub-Agents** — each specialized agent (compliance monitoring, data access, reporting) operates inside a hard-walled tool scope it cannot exceed, regardless of what it's told.
+- **Model Armor** — inbound instruction text is scanned and quarantined for injection patterns *before* it ever reaches the model. Authorization decisions are made in plain Python, never inferred by the LLM.
+- **Policy Twin** — a read-only, non-executable counterfactual explainer that lets a human operator ask "why was this denied?" without granting access or triggering a real tool call.
+- **Bounded Failure Recovery** — every model call is wrapped in a retry envelope (max 2 attempts, corrective re-prompting) that degrades to a safe, schema-valid default instead of crashing or hallucinating a result.
+- **Structured Observability** — a single authenticated ingress, rate-limiting, and OpenTelemetry-compliant structured logs for every agent action.
+
+---
+
+## Architecture
 
 ```mermaid
 flowchart TD
-  %% LAYER 1: FRONTEND & GATEWAY
-  subgraph TIER1["1. INGRESS & IDENTITY GATEWAY"]
-    UI["🖥️ React Control Room\n(Judge-facing UI & Auth)"]
-    AUTH["🛡️ Auth Gateway\n(Trust-by-Header: x-user-role, x-user-id)"]
+  subgraph TIER1["Ingress & Identity"]
+    UI["Control Room UI"]
+    AUTH["Auth Gateway (role/user headers)"]
   end
 
-  %% LAYER 2: ORCHESTRATOR & MEMORY
-  subgraph ADK["2. GOOGLE ADK MULTI-AGENT ORCHESTRATOR (Vertex AI Gemini 3.5 Flash, Intent Router)"]
-    RETRY["🔄 Bounded Retry Engine\n(Timeout 20s, 2 retries, Pydantic fallback)"]
-    MEMORY["💾 Session Memory Bank\n(Firestore, cross-request persistence)"]
+  subgraph ORCH["Multi-Agent Orchestrator (Intent Router)"]
+    RETRY["Bounded Retry Engine (timeout + 2 retries + schema fallback)"]
+    MEMORY["Session Memory (persistent, cross-request)"]
   end
 
-  %% LAYER 3: SUB-AGENTS & POLICY TWIN
-  subgraph SUBAGENTS["3. ISOLATED SPECIALIZED AGENTS"]
-    COMP["📋 Compliance Monitor\n(Grant & IRB deadline risk scan)"]
-    DATA["🔒 Data Access Agent\n(Scope check & Model Armor quarantine)"]
-    REPORT["📊 Reporting Agent\n(4-part weekly synthesis & audit ledger)"]
+  subgraph AGENTS["Scoped Specialized Agents"]
+    COMP["Compliance Monitor — deadline & risk scan"]
+    DATA["Data Access Agent — scope check + quarantine"]
+    REPORT["Reporting Agent — synthesis + audit ledger"]
   end
 
-  TWIN["📜 Policy Twin\n(Read-only counterfactual explainer)"]
+  TWIN["Policy Twin — read-only counterfactual explainer"]
 
-  %% LAYER 4: CLOUD INFRASTRUCTURE
-  subgraph INFRA["4. GOOGLE CLOUD ENTERPRISE INFRASTRUCTURE"]
-    RUN["☁️ Cloud Run\n(Serverless hosting, min-instances 0)"]
-    DB[("🔥 Google Firestore\n(Session context, agent registry, rules)")]
-    LOGS["🪵 Cloud Logging\n(OpenTelemetry structured audit log)"]
+  subgraph INFRA["Infrastructure"]
+    RUN["Serverless Runtime (scale-to-zero)"]
+    DB[("Persistent Store — session context, registry, rules")]
+    LOGS["Structured Audit Logging"]
   end
 
-  %% FLOW CONNECTIONS
-  UI --> ADK
-  AUTH --> ADK
-  ADK --> COMP
-  ADK --> DATA
-  ADK --> REPORT
-  DATA -.->|Dashed line = Read-only simulation, never grants access| TWIN
+  UI --> ORCH
+  AUTH --> ORCH
+  ORCH --> COMP
+  ORCH --> DATA
+  ORCH --> REPORT
+  DATA -.->|read-only simulation, never grants access| TWIN
   COMP --> RUN
   DATA --> DB
   REPORT --> LOGS
   TWIN -.-> DB
-
-  %% STYLING TO MATCH REFERENCE
-  style TIER1 fill:#1e3a8a,stroke:#3b82f6,stroke-width:2px,color:#fff
-  style UI fill:#1d4ed8,stroke:#60a5fa,color:#fff
-  style AUTH fill:#1d4ed8,stroke:#60a5fa,color:#fff
-
-  style ADK fill:#4c1d95,stroke:#8b5cf6,stroke-width:2px,color:#fff
-  style RETRY fill:#374151,stroke:#6b7280,color:#fff
-  style MEMORY fill:#374151,stroke:#6b7280,color:#fff
-
-  style SUBAGENTS fill:#064e3b,stroke:#10b981,stroke-width:2px,color:#fff
-  style COMP fill:#047857,stroke:#34d399,color:#fff
-  style DATA fill:#047857,stroke:#34d399,color:#fff
-  style REPORT fill:#047857,stroke:#34d399,color:#fff
-
-  style TWIN fill:#7c2d12,stroke:#f97316,stroke-dasharray: 5 5,color:#fff
-
-  style INFRA fill:#111827,stroke:#4b5563,stroke-width:2px,color:#fff
-  style RUN fill:#374151,stroke:#9ca3af,color:#fff
-  style DB fill:#374151,stroke:#9ca3af,color:#fff
-  style LOGS fill:#374151,stroke:#9ca3af,color:#fff
 ```
 
 ---
 
-## 🎯 GEAP Pillar Implementation Matrix
+## System guarantees
 
-| GEAP Pillar | Requirement | Code Implementation & Location |
-| --- | --- | --- |
-| **Agent Registry** | Discoverable collection of active agents, versioning, declared scopes, and tools | Firestore `agent_registry` collection. Read endpoint `GET /registry` in [`main.py`](file:///d:/SentinelMesh-Governance-Platform/gcp/sentinelmesh/main.py#L573-L576). |
-| **Agent Runtime & Memory Bank** | ADK Orchestrator, session memory persisting across restarts | Google ADK `Agent` & `Runner` in [`main.py`](file:///d:/SentinelMesh-Governance-Platform/gcp/sentinelmesh/main.py#L177-L195). Persistent `session_memory` in Firestore. |
-| **Model Armor & Isolation** | Scope-restricted sub-agents, instruction sanitization, privilege quarantine | Scoped tools in [`main.py`](file:///d:/SentinelMesh-Governance-Platform/gcp/sentinelmesh/main.py#L219-L275), Model Armor pattern scanner & Policy Twin in [`policy.py`](file:///d:/SentinelMesh-Governance-Platform/gcp/sentinelmesh/policy.py#L9-L68). |
-| **Observability & Gateway** | Single ingress API key authentication, rate-limiting, Cloud Logging traces | `require_api_key` middleware, Cloud Logging structured telemetry in [`main.py`](file:///d:/SentinelMesh-Governance-Platform/gcp/sentinelmesh/main.py#L510-L532), `GET /observability`. |
-| **Failure Handling & Recovery** | Bounded retry (max 2), schema validation, safe default fallback, never crash | `run_with_recovery` wrapper in [`main.py`](file:///d:/SentinelMesh-Governance-Platform/gcp/sentinelmesh/main.py#L453-L481). |
+| Pillar | Guarantee | Where it lives |
+|---|---|---|
+| **Agent Registry** | Every agent's identity, version, and scope is discoverable, not assumed | `GET /registry` |
+| **Runtime & Memory** | Agent state persists across restarts and requests | Orchestrator `Runner` + persistent session store |
+| **Isolation & Model Armor** | Sub-agents cannot exceed their declared tool scope; instruction text is sanitized before the model sees it; authorization is decided in code, not by the LLM | Scoped tool definitions + pattern scanner |
+| **Observability** | Every request is authenticated, rate-limited, and traceable end to end | `require_api_key` middleware + `GET /observability` |
+| **Failure Handling** | The system never silently acts on invalid output and never crashes on model failure | Bounded retry + schema-valid fallback wrapper |
 
 ---
 
-## ⚡ Exact GCP Spin-up Steps
+## Getting started
 
 ```bash
-# 1. Configure Environment
-export GCP_PROJECT_ID="your-gcp-project-id"
-export GOOGLE_CLOUD_LOCATION="us-central1"
-export SENTINELMESH_API_KEY="$(openssl rand -hex 24)"
-export GEMINI_MODEL="gemini-3.5-flash"
+# 1. Configure environment
+export PROJECT_ID="your-project-id"
+export REGION="us-central1"
+export API_KEY="$(openssl rand -hex 24)"
+export MODEL="your-model-name"
 
-# 2. Authenticate Google Cloud SDK
+# 2. Authenticate
 gcloud auth login
 gcloud auth application-default login
-gcloud config set project "$GCP_PROJECT_ID"
+gcloud config set project "$PROJECT_ID"
 
-# 3. Create Python Virtual Environment & Install Dependencies
+# 3. Install dependencies
 cd gcp/sentinelmesh
 python -m venv .venv
-# On Linux/macOS: source .venv/bin/activate
-# On Windows PowerShell: .venv\Scripts\Activate.ps1
+source .venv/bin/activate   # Windows: .venv\Scripts\Activate.ps1
 pip install -r requirements.txt
 
-# 4. Seed Firestore collections (agent_registry, compliance_items, access_rules)
+# 4. Seed the data store (agent registry, compliance items, access rules)
 python seed_firestore.py
 
-# 5. Deploy Orchestrator to Cloud Run
+# 5. Deploy
 chmod +x deploy.sh
 ./deploy.sh
 ```
 
 ---
 
-## 🔍 Findings and Learnings
+## Design principles we learned the hard way
 
-1. **Schema Validation is the Primary Safety Boundary**: A model timeout is easily handled, but accepting malformed structured output as valid is catastrophic. SentinelMesh enforces Pydantic schema validation before persisting or acting on any output.
-2. **Bounded Retry Prevents Infinite Drift**: SentinelMesh bounds retries to exactly 2 attempts with corrective prompt injection. If the model still fails schema validation, it gracefully degrades to a safe schema-valid fallback default without crashing.
-3. **Model Armor Requires Deterministic Isolation**: Language models should never evaluate raw instruction text when deciding privilege escalation. SentinelMesh quarantines suspicious instruction patterns before model execution and leaves scope authorization to Python.
-4. **Policy Twins Empower Human Operators**: Non-executable counterfactual policy twins allow operators to discover why access was denied without granting access or executing unauthorized tool calls.
+- **Schema validation is the real safety boundary.** A timeout is recoverable. Acting on malformed structured output as if it were valid is not — every model output is validated before it's persisted or acted on.
+- **Bounded retry beats infinite drift.** Exactly two corrective retries, then a safe schema-valid fallback. No infinite loops, no silent failure.
+- **Authorization must be deterministic.** A language model should never be the thing deciding whether privilege escalation is allowed. Suspicious instruction patterns are quarantined *before* the model runs, and scope enforcement lives entirely in code.
+- **Give operators a way to ask "why," not just "no."** The Policy Twin lets a human explore a denied action's reasoning without ever executing it or granting real access.
+
+---
+
+## Project structure
+
+```
+gcp/sentinelmesh/
+├── main.py          # Orchestrator, agents, retry engine, API surface
+├── policy.py         # Model Armor scanner + Policy Twin
+├── seed_firestore.py # Registry / rules bootstrap
+├── deploy.sh          # Deployment script
+└── requirements.txt
+```
+
+---
+
+## License
+
+Add your preferred license here (MIT/Apache-2.0 recommended for open-source distribution).
