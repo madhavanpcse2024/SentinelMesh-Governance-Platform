@@ -116,6 +116,7 @@ chmod +x deploy.sh
 
 ## Design principles we learned the hard way
 
+<<<<<<< HEAD
 - **Schema validation is the real safety boundary.** A timeout is recoverable. Acting on malformed structured output as if it were valid is not — every model output is validated before it's persisted or acted on.
 - **Bounded retry beats infinite drift.** Exactly two corrective retries, then a safe schema-valid fallback. No infinite loops, no silent failure.
 - **Authorization must be deterministic.** A language model should never be the thing deciding whether privilege escalation is allowed. Suspicious instruction patterns are quarantined *before* the model runs, and scope enforcement lives entirely in code.
@@ -136,6 +137,7 @@ gcp/sentinelmesh/
 
 ---
 
-## License
+## 📄 License
 
-Add your preferred license here (MIT/Apache-2.0 recommended for open-source distribution).
+This project is licensed under the [MIT License](LICENSE).
+
