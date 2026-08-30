@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "SentinelMesh"
+description = "A governance console for a multi-agent enterprise fleet. SentinelMesh routes compliance, data-access, and reporting tasks through scoped agents, preserves context across sessions, and exposes auditable recovery traces for research institutions."
+version = "1.0.0"
+id = "artifacts/sentinelmesh"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 19967
+
+[services.development]
+run = "pnpm --filter @workspace/sentinelmesh run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/sentinelmesh", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/sentinelmesh/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "19967"
+BASE_PATH = "/"
