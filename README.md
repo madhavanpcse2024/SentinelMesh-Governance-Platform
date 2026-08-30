@@ -114,9 +114,38 @@ chmod +x deploy.sh
 
 ---
 
+## Reproducible Testing
+
+SentinelMesh includes deterministic unit and integration test suites to verify Model Armor, access policies, scope isolation, and API route behaviors.
+
+### 1. Zero-Dependency Deterministic Safety Tests
+To run offline regression tests for Model Armor injection quarantining and access policy boundaries (no external GCP dependencies required):
+
+```bash
+python gcp/sentinelmesh/test_policy.py
+```
+
+### 2. Route & Orchestration Unit Test Suite
+To run the full suite of route-level and orchestrator recovery tests:
+
+```bash
+cd gcp/sentinelmesh
+# Ensure dependencies are installed
+pip install -r requirements.txt
+python -m unittest discover -s . -p "test_*.py"
+```
+
+### 3. End-to-End API Integration Verification
+When running the local server or Cloud Run instance, execute the automated endpoint test harness:
+
+```bash
+node artifacts/test-endpoints.js
+```
+
+---
+
 ## Design principles we learned the hard way
 
-<<<<<<< HEAD
 - **Schema validation is the real safety boundary.** A timeout is recoverable. Acting on malformed structured output as if it were valid is not — every model output is validated before it's persisted or acted on.
 - **Bounded retry beats infinite drift.** Exactly two corrective retries, then a safe schema-valid fallback. No infinite loops, no silent failure.
 - **Authorization must be deterministic.** A language model should never be the thing deciding whether privilege escalation is allowed. Suspicious instruction patterns are quarantined *before* the model runs, and scope enforcement lives entirely in code.
@@ -131,6 +160,8 @@ gcp/sentinelmesh/
 ├── main.py          # Orchestrator, agents, retry engine, API surface
 ├── policy.py         # Model Armor scanner + Policy Twin
 ├── seed_firestore.py # Registry / rules bootstrap
+├── test_policy.py    # Zero-dependency safety & policy regression tests
+├── test_main.py      # Route & orchestrator unit test suite
 ├── deploy.sh          # Deployment script
 └── requirements.txt
 ```
