@@ -28,6 +28,10 @@
 
 ## 🏛️ Architecture & GEAP Pillar Mapping
 
+### 📐 System Architecture Diagram
+![SentinelMesh System Architecture Diagram](file:///d:/SentinelMesh-Governance-Platform/SentinelMesh_Architecture_Diagram.png)
+
+### 🛡️ GEAP 4-Pillar Infrastructure Architecture
 ![SentinelMesh 10/10 Architecture Diagram](file:///d:/SentinelMesh-Governance-Platform/SentinelMesh_10of10_Architecture.png)
 
 ```mermaid

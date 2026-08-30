@@ -6,8 +6,12 @@
 
 ---
 
-## 🎨 High-Resolution System Architecture Diagram
+## 🎨 High-Resolution System Architecture Diagrams
 
+### 📐 End-to-End Governance Architecture
+![SentinelMesh System Architecture Diagram](file:///d:/SentinelMesh-Governance-Platform/SentinelMesh_Architecture_Diagram.png)
+
+### 🛡️ GEAP 4-Pillar Enterprise Architecture
 ![SentinelMesh 10/10 Architecture Diagram](file:///d:/SentinelMesh-Governance-Platform/SentinelMesh_10of10_Architecture.png)
 
 ---
