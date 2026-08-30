@@ -5,6 +5,28 @@
 
 ---
 
+## 📋 Devpost Official Submission Form Copy-Paste Summary
+
+* **Project Name**: SentinelMesh — Multi-Agent Enterprise Governance System
+* **Elevator Pitch**: Fortified Multi-Agent Governance Control Plane for Enterprise Fleet & Campus Research Labs built with Google ADK, Gemini 3.5 Flash, Cloud Run & Firestore.
+* **Track Selected**: **The Fortified Enterprise Fleet** ($20,000 Cash Prize Track)
+* **Public Code Repository**: `https://github.com/Madhavan20906/SentinelMesh-Governance-Platform`
+* **Hosted Cloud Run URL**: `https://sentinelmesh-gov-plane-7x9a3k-uc.a.run.app`
+* **~4-Minute Demo Video File**: `SentinelMesh_Demo_Video.webp` (Included in repo root & downloadable in topbar at `http://localhost:5000`)
+* **Google Tech Stack Verified**:
+  - **Google ADK (Agent Development Kit)** — Orchestration & scoped tool execution
+  - **Vertex AI Gemini 3.5 Flash** — Reasoning engine & Pydantic schema validation
+  - **Google Cloud Run** — Serverless microservices backend deployment
+  - **Google Firestore** — Persistent `session_memory` context & `agent_registry`
+  - **Google Cloud Logging** — OpenTelemetry-compliant audit trail
+* **GEAP 4 Pillars Verified**:
+  1. **Agent Registry**: Firestore catalog + `GET /registry` API endpoint
+  2. **Agent Runtime & Memory**: Google ADK `Runner` + Firestore `session_memory`
+  3. **Security & Model Armor**: Trust-by-Header RBAC + inline prompt injection quarantine
+  4. **Agent Observability**: `require_api_key` middleware + Cloud Logging telemetry
+
+---
+
 ## 🏛️ Architecture & GEAP Pillar Mapping
 
 ![SentinelMesh 10/10 Architecture Diagram](file:///d:/SentinelMesh-Governance-Platform/SentinelMesh_10of10_Architecture.png)
