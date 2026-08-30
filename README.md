@@ -145,20 +145,3 @@ chmod +x deploy.sh
 2. **Bounded Retry Prevents Infinite Drift**: SentinelMesh bounds retries to exactly 2 attempts with corrective prompt injection. If the model still fails schema validation, it gracefully degrades to a safe schema-valid fallback default without crashing.
 3. **Model Armor Requires Deterministic Isolation**: Language models should never evaluate raw instruction text when deciding privilege escalation. SentinelMesh quarantines suspicious instruction patterns before model execution and leaves scope authorization to Python.
 4. **Policy Twins Empower Human Operators**: Non-executable counterfactual policy twins allow operators to discover why access was denied without granting access or executing unauthorized tool calls.
-
----
-
-
-
-## 🚀 Bonus Submission Materials
-
-### Social Post (#AllThingsAgenticHackathon)
-> Built SentinelMesh for the #AllThingsAgenticHackathon! 🛡️ A multi-agent enterprise governance system for campus research labs using Google ADK, Gemini 3.5 Flash, Cloud Run & Firestore. Includes Model Armor, Policy Twins, and self-healing retry fallbacks! #GoogleCloud #VertexAI #AgenticAI
-
-### Dev.to / Medium Article Pitch Summary
-> **How We Built SentinelMesh: Fortified Multi-Agent Governance with Google ADK and Gemini 3.5**  
-> *Key Insights*:
-> 1. Why agent discovery must start at a single source of truth (`agent_registry`).
-> 2. Hard-scoping tools per agent to prevent cross-domain tool leakage.
-> 3. Designing self-healing orchestrators with bounded retries and schema validation fallbacks.
-> 4. Separating model reasoning from deterministic policy authorization.
