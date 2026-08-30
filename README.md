@@ -12,7 +12,6 @@
 * **Track Selected**: **The Fortified Enterprise Fleet** ($20,000 Cash Prize Track)
 * **Public Code Repository**: `https://github.com/Madhavan20906/SentinelMesh-Governance-Platform`
 * **Hosted Cloud Run URL**: `https://sentinelmesh-gov-plane-7x9a3k-uc.a.run.app`
-* **~4-Minute Demo Video File**: `SentinelMesh_Demo_Video.webp` (Included in repo root & downloadable in topbar at `http://localhost:5000`)
 * **Google Tech Stack Verified**:
   - **Google ADK (Agent Development Kit)** — Orchestration & scoped tool execution
   - **Vertex AI Gemini 3.5 Flash** — Reasoning engine & Pydantic schema validation
@@ -149,24 +148,7 @@ chmod +x deploy.sh
 
 ---
 
-## 🎬 4-Minute Demo Script (Rehearsed Video Breakdown)
 
-* **0:00 - 0:20 (Problem Statement)**:  
-  "Resource-constrained campus research labs handle enterprise-grade compliance risk — grant deadlines, IRB renewals, and cross-PI data access — with zero enterprise budget. Meet SentinelMesh."
-* **0:20 - 1:00 (Architecture Walkthrough)**:  
-  "SentinelMesh builds on Google ADK and Gemini 3.5 Flash across 4 GEAP pillars: Agent Registry in Firestore, an ADK Orchestrator with persistent memory, 3 isolated sub-agents with scoped tools, and an API Gateway with Cloud Logging observability."
-* **1:00 - 1:40 (Live Compliance Task & Routing)**:  
-  "Submitting a compliance task: the orchestrator queries `agent_registry`, classifies intent, routes to Compliance Monitor, which calls its hard-scoped Firestore tool and returns a schema-validated risk summary."
-* **1:40 - 2:20 (Model Armor & Prompt Injection Defense)**:  
-  "Submitting an unauthorized cross-PI data request with embedded instruction hijacking (`ignore previous instructions`). Data Access Agent catches the injection signal, quarantines the text, denies access under declared PI scope, and writes an audit log to `access_log`."
-* **2:20 - 3:10 (THE MONEY SHOT — Failure Recovery)**:  
-  "Triggering deliberate sub-agent failure via `failure_injection: true`. The orchestrator catches the schema mismatch, logs the failure trace to Cloud Logging, issues a corrective prompt retry, and gracefully degrades to a safe fallback response after max 2 retries without crashing."
-* **3:10 - 3:40 (Session Memory Persistence)**:  
-  "Killing and restarting the session: querying `GET /sessions/demo-session` proves context and prior intent remain completely intact from Firestore `session_memory`."
-* **3:40 - 4:00 (Proof of Deployment & Unlikely Hero Closing)**:  
-  "Showing the live Cloud Run dashboard in GCP Console. SentinelMesh proves that small research labs can deploy enterprise-grade, resilient AI governance on Google Cloud."
-
----
 
 ## 🚀 Bonus Submission Materials
 

@@ -644,15 +644,7 @@ function HeaderActions() {
         </span>
       </div>
 
-      <a
-        href="/SentinelMesh_Demo_Video.webp"
-        download="SentinelMesh_4Min_Demo_Video.webp"
-        className="button button-accent text-xs py-1.5 px-3 flex items-center gap-1.5 shadow-md shadow-accent/20"
-        data-testid="button-download-video"
-      >
-        <Video size={14} />
-        <span>Download 4-Min Demo Video</span>
-      </a>
+
 
       <button
         onClick={() => setOpenLoginModal(true)}
@@ -1391,40 +1383,7 @@ function CloudConsole() {
   );
 }
 
-function DemoVideoDownload() {
-  return (
-    <div className="page-shell animate-mesh-in">
-      <div className="page-intro">
-        <div>
-          <div className="label-caps text-accent">Submission Asset · Download Center</div>
-          <h1>SentinelMesh <em>Demo Video Downloads.</em></h1>
-          <p>Get the full ~4-minute high-definition demo walkthrough video and raw frame assets directly for off-line review or evaluation.</p>
-        </div>
-        <div className="intro-callout">
-          <ServerCog size={16} />
-          <span className="mono text-xs">GCP Cloud Run: https://sentinelmesh-gov-plane-7x9a3k-uc.a.run.app</span>
-        </div>
-      </div>
 
-      <div className="metric-grid mb-6">
-        <div className="metric-card tone-teal" data-testid="download-card-mp4">
-          <div className="metric-top"><FileVideo size={20} className="text-teal" /><span className="mono text-xs text-muted-foreground">MP4 Format</span></div>
-          <div className="metric-value text-xl">Demo Walkthrough .MP4</div>
-          <div className="metric-detail mb-4">4:00 min video recording · 1080p rendered walkthrough</div>
-          <a
-            href="/SentinelMesh_Demo_Walkthrough.mp4"
-            download="SentinelMesh_Demo_Walkthrough.mp4"
-            className="button button-accent w-full justify-center"
-            data-testid="button-download-mp4"
-          >
-            <Download size={16} />
-            Download Video (.MP4 - 70.4 MB)
-          </a>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 function ComplianceWorkspace() {
   const task = useRunGovernanceTask();
