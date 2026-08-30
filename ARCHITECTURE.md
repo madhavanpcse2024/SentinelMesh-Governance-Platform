@@ -8,78 +8,74 @@
 
 ## 🎨 High-Resolution System Architecture Diagram
 
-![SentinelMesh System Architecture Diagram](file:///d:/SentinelMesh-Governance-Platform/SentinelMesh_Architecture_Diagram.png)
+![SentinelMesh 10/10 Architecture Diagram](file:///d:/SentinelMesh-Governance-Platform/SentinelMesh_10of10_Architecture.png)
 
 ---
 
-## ⚡ Interactive Mermaid End-to-End Architecture
+## ⚡ Interactive End-to-End Architecture Diagram
 
 ```mermaid
 flowchart TD
-  %% --------------------------------------------------
-  %% LAYER 1: CLIENT & INGRESS GATEWAY
-  %% --------------------------------------------------
-  subgraph L1["1. CLIENT & SECURITY INGRESS GATEWAY"]
-    UI["🖥️ React 19 Control Room UI\n(Glassmorphic Dark Theme)"]
-    AUTH["🔐 Auth & Dynamic Identity System\n(Pre-seeded Roles: CSO, Auditor, PI)"]
-    GATEWAY["🛡️ Trust-by-Header API Gateway\n(x-user-role, x-user-id, Rate Limiter)"]
+  %% LAYER 1: FRONTEND & GATEWAY
+  subgraph TIER1["1. INGRESS & IDENTITY GATEWAY"]
+    UI["🖥️ React Control Room\n(Judge-facing UI & Auth)"]
+    AUTH["🛡️ Auth Gateway\n(Trust-by-Header: x-user-role, x-user-id)"]
   end
 
-  %% --------------------------------------------------
-  %% LAYER 2: ORCHESTRATION & REASONING ENGINE
-  %% --------------------------------------------------
-  subgraph L2["2. GOOGLE ADK MULTI-AGENT ORCHESTRATOR"]
-    ORCH["⚡ Google ADK Orchestrator\n(Agent Development Kit Runtime)"]
-    LLM["🧠 Vertex AI Gemini 3.5 Flash\n(System Prompt & Safety Guardrails)"]
-    CIRCUIT["🔄 Self-Healing Circuit Breaker\n(Bounded Retry: Max 2, Fallback Default)"]
-    POLICY["📜 Deterministic Policy Twin\n(Policy.py Counterfactual Engine)"]
+  %% LAYER 2: ORCHESTRATOR & MEMORY
+  subgraph ADK["2. GOOGLE ADK MULTI-AGENT ORCHESTRATOR (Vertex AI Gemini 3.5 Flash, Intent Router)"]
+    RETRY["🔄 Bounded Retry Engine\n(Timeout 20s, 2 retries, Pydantic fallback)"]
+    MEMORY["💾 Session Memory Bank\n(Firestore, cross-request persistence)"]
   end
 
-  %% --------------------------------------------------
-  %% LAYER 3: ISOLATED SPECIALIZED AGENT FLEET
-  %% --------------------------------------------------
-  subgraph L3["3. ISOLATED SUB-AGENT FLEET (Scoped Tools)"]
-    COMP_AGENT["📋 Compliance Monitor Agent\n(Tool: Grant & IRB Review DB)"]
-    DATA_AGENT["🔒 Data Access Control Agent\n(Tool: Access Rules & Scopes)"]
-    ARMOR["🚨 Model Armor Threat Defense\n(Inline Instruction Hijack Quarantine)"]
-    REPORT_AGENT["📊 Executive Reporting Agent\n(Tool: Cross-Agent Intelligence Synthesis)"]
+  %% LAYER 3: SUB-AGENTS & POLICY TWIN
+  subgraph SUBAGENTS["3. ISOLATED SPECIALIZED AGENTS"]
+    COMP["📋 Compliance Monitor\n(Grant & IRB deadline risk scan)"]
+    DATA["🔒 Data Access Agent\n(Scope check & Model Armor quarantine)"]
+    REPORT["📊 Reporting Agent\n(4-part weekly synthesis & audit ledger)"]
   end
 
-  %% --------------------------------------------------
-  %% LAYER 4: GOOGLE CLOUD INFRASTRUCTURE
-  %% --------------------------------------------------
-  subgraph L4["4. GOOGLE CLOUD ENTERPRISE INFRASTRUCTURE"]
-    RUN["☁️ GCP Cloud Run Service\n(Min Instances: 0, Auto-scaling)"]
-    FIRESTORE[("🔥 Google Firestore Memory Bank\n(session_memory & agent_registry)")]
-    LOGGING["🪵 Google Cloud Logging\n(OpenTelemetry Structured Traces)"]
+  TWIN["📜 Policy Twin\n(Read-only counterfactual explainer)"]
+
+  %% LAYER 4: CLOUD INFRASTRUCTURE
+  subgraph INFRA["4. GOOGLE CLOUD ENTERPRISE INFRASTRUCTURE"]
+    RUN["☁️ Cloud Run\n(Serverless hosting, min-instances 0)"]
+    DB[("🔥 Google Firestore\n(Session context, agent registry, rules)")]
+    LOGS["🪵 Cloud Logging\n(OpenTelemetry structured audit log)"]
   end
 
-  %% CONNECTIONS & FLOWS
-  UI -->|HTTP / JSON + Identity Headers| GATEWAY
-  AUTH -->|Inject Identity Context| GATEWAY
-  GATEWAY -->|Authorized Governance Task| ORCH
-  GATEWAY -->|Auditor Unauthorized Mutate| POLICY
-  POLICY -->|Deny Action| UI
+  %% FLOW CONNECTIONS
+  UI --> ADK
+  AUTH --> ADK
+  ADK --> COMP
+  ADK --> DATA
+  ADK --> REPORT
+  DATA -.->|Dashed line = Read-only simulation, never grants access| TWIN
+  COMP --> RUN
+  DATA --> DB
+  REPORT --> LOGS
+  TWIN -.-> DB
 
-  ORCH <-->|Reasoning Loop| LLM
-  ORCH -->|Invoke Sub-Agent| CIRCUIT
-  CIRCUIT -->|Route Query| COMP_AGENT
-  CIRCUIT -->|Route Query| DATA_AGENT
-  CIRCUIT -->|Route Query| REPORT_AGENT
+  %% STYLING TO MATCH REFERENCE
+  style TIER1 fill:#1e3a8a,stroke:#3b82f6,stroke-width:2px,color:#fff
+  style UI fill:#1d4ed8,stroke:#60a5fa,color:#fff
+  style AUTH fill:#1d4ed8,stroke:#60a5fa,color:#fff
 
-  DATA_AGENT <-->|Sanitize Prompt| ARMOR
-  ARMOR -->|Quarantine Hijack| UI
+  style ADK fill:#4c1d95,stroke:#8b5cf6,stroke-width:2px,color:#fff
+  style RETRY fill:#374151,stroke:#6b7280,color:#fff
+  style MEMORY fill:#374151,stroke:#6b7280,color:#fff
 
-  ORCH <-->|Read / Write Context| FIRESTORE
-  ORCH -->|Stream Telemetry| LOGGING
-  RUN --- L2
-  RUN --- L4
+  style SUBAGENTS fill:#064e3b,stroke:#10b981,stroke-width:2px,color:#fff
+  style COMP fill:#047857,stroke:#34d399,color:#fff
+  style DATA fill:#047857,stroke:#34d399,color:#fff
+  style REPORT fill:#047857,stroke:#34d399,color:#fff
 
-  style L1 fill:#0f172a,stroke:#38bdf8,stroke-width:2px,color:#fff
-  style L2 fill:#0f172a,stroke:#14b8a6,stroke-width:2px,color:#fff
-  style L3 fill:#0f172a,stroke:#f59e0b,stroke-width:2px,color:#fff
-  style L4 fill:#0f172a,stroke:#6366f1,stroke-width:2px,color:#fff
-  style ARMOR fill:#7f1d1d,stroke:#f43f5e,stroke-width:2px,color:#fff
+  style TWIN fill:#7c2d12,stroke:#f97316,stroke-dasharray: 5 5,color:#fff
+
+  style INFRA fill:#111827,stroke:#4b5563,stroke-width:2px,color:#fff
+  style RUN fill:#374151,stroke:#9ca3af,color:#fff
+  style DB fill:#374151,stroke:#9ca3af,color:#fff
+  style LOGS fill:#374151,stroke:#9ca3af,color:#fff
 ```
 
 ---

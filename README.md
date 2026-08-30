@@ -7,48 +7,70 @@
 
 ## 🏛️ Architecture & GEAP Pillar Mapping
 
+![SentinelMesh 10/10 Architecture Diagram](file:///d:/SentinelMesh-Governance-Platform/SentinelMesh_10of10_Architecture.png)
+
 ```mermaid
 flowchart TD
-  subgraph GATEWAY["1. AGENT GATEWAY & OBSERVABILITY"]
-    INGRESS["Ingress API Gateway (x-api-key & Rate Limiting)"]
-    CLOUDLOG["Cloud Logging Structured Telemetry"]
-    OBS_API["GET /observability & GET /registry"]
+  %% LAYER 1: FRONTEND & GATEWAY
+  subgraph TIER1["1. INGRESS & IDENTITY GATEWAY"]
+    UI["🖥️ React Control Room\n(Judge-facing UI & Auth)"]
+    AUTH["🛡️ Auth Gateway\n(Trust-by-Header: x-user-role, x-user-id)"]
   end
 
-  subgraph ORCHESTRATOR["2. ORCHESTRATOR & MEMORY BANK"]
-    ADK_ORCH["Google ADK Orchestrator + Gemini 3.5 Flash"]
-    RETRY_WRAP["Timeout (20s) + Bounded Retry (Max 2) + Safe Fallback"]
-    SESS_MEM[("Firestore session_memory")]
+  %% LAYER 2: ORCHESTRATOR & MEMORY
+  subgraph ADK["2. GOOGLE ADK MULTI-AGENT ORCHESTRATOR (Vertex AI Gemini 3.5 Flash, Intent Router)"]
+    RETRY["🔄 Bounded Retry Engine\n(Timeout 20s, 2 retries, Pydantic fallback)"]
+    MEMORY["💾 Session Memory Bank\n(Firestore, cross-request persistence)"]
   end
 
-  subgraph REGISTRY["AGENT REGISTRY"]
-    REG_DB[("Firestore agent_registry")]
+  %% LAYER 3: SUB-AGENTS & POLICY TWIN
+  subgraph SUBAGENTS["3. ISOLATED SPECIALIZED AGENTS"]
+    COMP["📋 Compliance Monitor\n(Grant & IRB deadline risk scan)"]
+    DATA["🔒 Data Access Agent\n(Scope check & Model Armor quarantine)"]
+    REPORT["📊 Reporting Agent\n(4-part weekly synthesis & audit ledger)"]
   end
 
-  subgraph SUBAGENTS["3. ISOLATED SUB-AGENTS (Scoped Tools)"]
-    COMP_AGT["a) Compliance Monitor Agent\n(Tool: read compliance_items)"]
-    DATA_AGT["b) Data Access Agent\n(Tool: read access_rules + Model Armor)"]
-    REPO_AGT["c) Reporting Agent\n(Tool: pull events + cross-agent synthesis)"]
+  TWIN["📜 Policy Twin\n(Read-only counterfactual explainer)"]
+
+  %% LAYER 4: CLOUD INFRASTRUCTURE
+  subgraph INFRA["4. GOOGLE CLOUD ENTERPRISE INFRASTRUCTURE"]
+    RUN["☁️ Cloud Run\n(Serverless hosting, min-instances 0)"]
+    DB[("🔥 Google Firestore\n(Session context, agent registry, rules)")]
+    LOGS["🪵 Cloud Logging\n(OpenTelemetry structured audit log)"]
   end
 
-  subgraph STORAGE["FIRESTORE STATE"]
-    CI_DB[("compliance_items\n(8-10 active grant/IRB items)")]
-    AR_DB[("access_rules\n(PI -> allowed project IDs)")]
-    AL_DB[("access_log\n(Audit trail of denials)")]
-  end
+  %% FLOW CONNECTIONS
+  UI --> ADK
+  AUTH --> ADK
+  ADK --> COMP
+  ADK --> DATA
+  ADK --> REPORT
+  DATA -.->|Dashed line = Read-only simulation, never grants access| TWIN
+  COMP --> RUN
+  DATA --> DB
+  REPORT --> LOGS
+  TWIN -.-> DB
 
-  INGRESS --> REG_DB
-  INGRESS --> ADK_ORCH
-  ADK_ORCH --> RETRY_WRAP
-  ADK_ORCH <--> SESS_MEM
-  RETRY_WRAP --> COMP_AGT
-  RETRY_WRAP --> DATA_AGT
-  RETRY_WRAP --> REPO_AGT
-  COMP_AGT --> CI_DB
-  DATA_AGT --> AR_DB
-  DATA_AGT --> AL_DB
-  REPO_AGT --> CI_DB
-  ADK_ORCH --> CLOUDLOG
+  %% STYLING TO MATCH REFERENCE
+  style TIER1 fill:#1e3a8a,stroke:#3b82f6,stroke-width:2px,color:#fff
+  style UI fill:#1d4ed8,stroke:#60a5fa,color:#fff
+  style AUTH fill:#1d4ed8,stroke:#60a5fa,color:#fff
+
+  style ADK fill:#4c1d95,stroke:#8b5cf6,stroke-width:2px,color:#fff
+  style RETRY fill:#374151,stroke:#6b7280,color:#fff
+  style MEMORY fill:#374151,stroke:#6b7280,color:#fff
+
+  style SUBAGENTS fill:#064e3b,stroke:#10b981,stroke-width:2px,color:#fff
+  style COMP fill:#047857,stroke:#34d399,color:#fff
+  style DATA fill:#047857,stroke:#34d399,color:#fff
+  style REPORT fill:#047857,stroke:#34d399,color:#fff
+
+  style TWIN fill:#7c2d12,stroke:#f97316,stroke-dasharray: 5 5,color:#fff
+
+  style INFRA fill:#111827,stroke:#4b5563,stroke-width:2px,color:#fff
+  style RUN fill:#374151,stroke:#9ca3af,color:#fff
+  style DB fill:#374151,stroke:#9ca3af,color:#fff
+  style LOGS fill:#374151,stroke:#9ca3af,color:#fff
 ```
 
 ---
